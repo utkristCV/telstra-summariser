@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Telstra Summariser UI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f8f9fa;
+      color: #333;
+    }
+    h2 {
+      margin-bottom: 15px;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .form-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .form-group {
+      flex: 0.98;
+    }
+    .form-group.n-character-group {
+      flex: 0.0;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      margin-top: 10px;
+    }
+    input {
+      width: 90px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .more-info {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-left: 4px solid #007bff;
+      background: #f1f3f5;
+      border-radius: 4px;
+    }
+    .more-info h4{
+      margin: 5px 0px;
+    }
+    .light-word {
+      font-size: 0.9em;
+      color: #666;
+    }
+    .error {
+      color: #b30000;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Telstra Summariser</h2>
+  <form id="summarise-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="conversation">Conversation:</label>
+        <textarea id="conversation" placeholder="Enter text here..." required></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group n-character-group">
+        <label for="max-n-character">Max Character</label>
+        <input type="number" id="max-n-character" min="50" max="150" value="144" required>
+      </div>
+      <div class="form-group n-character-group">
+        <label for="min-n-character">Min Character</label>
+        <input type="number" id="min-n-character" min="10" max="20" value="10" required>
+      </div>
+    </div>
+    <button type="submit">Summarise</button>
+  </form>
+
+  <div id="result" class="result" style="display:none;"></div>
+
+  <script>
+    function toggleSystemPromptDisplay() {
+      const element = document.getElementsByClassName('system-prompt');
+      element[0].classList.toggle('hidden');
+    }
+
+    function cleanConversationInput(input) {
+      let trimmed = input.trim();
+
+      try {
+          // Case 1: Already valid JSON (array or object)
+        return JSON.parse(trimmed);
+      } catch (e) {
+        // Case 2: Likely a list of objects without surrounding []
+        try {
+            // Split into lines, remove empties, join with commas
+            let lines = trimmed.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            let wrapped = `[${lines.join("")}]`; // join without adding extra commas
+            return JSON.parse(wrapped);
+        } catch (e) {
+            return input;
+        }
+      }
+    }
+    document.getElementById("summarise-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const conversation_content = document.getElementById("conversation").value.replace(/[\r\n\t]/g, "").trim();
+      let conversation = cleanConversationInput(conversation_content)
+      const max_n_character = document.getElementById("max-n-character").value;
+      const min_n_character = document.getElementById("min-n-character").value;
+
+      const responseDiv = document.getElementById("result");
+      responseDiv.style.display = "block";
+      responseDiv.innerHTML = "<em>Loading...</em>";
+
+      try {
+        const url = '/summarise?'
+        const conv_data = {
+          conversation: conversation,
+          max_n_character: max_n_character,
+          min_n_character: min_n_character
+        }
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(conv_data)
+        })
+
+        if (!res.ok) {
+          throw new Error(`Server responded with ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // if API reports success but includes a message, treat it as error
+        if (data.status === "success" && data.message) {
+          responseDiv.innerHTML = `<div class="error">${data.message}</div>`;
+          return;
+        }
+
+        if (data.status !== "success") {
+          responseDiv.innerHTML = `<div class="error">Error: ${data.message || "Unknown error"}</div>`;
+          return;
+        }
+
+        let html = `
+          <h3>Summary:</h3>
+          <p>${data.summary}</p>
+          <div class="more-info">
+            <h4 onclick="toggleSystemPromptDisplay()">System Prompt:</h4>
+            <div class="system-prompt">
+              <p class="light-word">${data.system_prompt}</p>
+            </div>
+          </div>
+        `;
+
+        responseDiv.innerHTML = html;
+      } catch (err) {
+        responseDiv.innerHTML = `<div class="error">Fetch error: ${err.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
