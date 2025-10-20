@@ -1,7 +1,10 @@
 services:
 
     telstra-summariser-service:
-        build: ./app
+        build: 
+            context: ./app
+            platforms:
+                - "linux/amd64" 
         image: cv-telstra-nonprod-summariser
         ports:
             - 8000:8000
