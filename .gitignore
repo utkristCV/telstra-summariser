@@ -1,5 +1,6 @@
 # --- Custom ignores ---
 logs/
+prompts/
 
 # --- Python ---
 __pycache__/

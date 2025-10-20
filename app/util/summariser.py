@@ -12,8 +12,13 @@ MIN_N_CHARACTERS = int(os.environ.get('SUMMARISER_MIN_N_CHARACTERS', 10))
 MAX_N_CHARACTERS = int(os.environ.get('SUMMARISER_MAN_N_CHARACTERS',150))
 AWS_S3_BUCKET_NAME = os.environ.get('AWS_S3_BUCKET_NAME')
 AWS_S3_OBJECT_KEY = os.environ.get('AWS_S3_PROMPT_OBJECT_KEY')
+ENVIRONMENT = os.environ.get("SUMMARISER_ENVIRONMENT", "staging").lower()
 
-prompt_template = load_prompt_data(AWS_S3_BUCKET_NAME, AWS_S3_OBJECT_KEY)
+if ENVIRONMENT == "local":
+    with open('prompts/' + AWS_S3_OBJECT_KEY, 'r') as file:
+        prompt_template = file.read()
+else:
+    prompt_template = load_prompt_data(AWS_S3_BUCKET_NAME, AWS_S3_OBJECT_KEY)
 
 def summariser(conversation, max_n_char=MAX_N_CHARACTERS, min_n_char=MIN_N_CHARACTERS):
     try:
