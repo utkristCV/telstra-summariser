@@ -1,0 +1,24 @@
+[project]
+name = "telstra-summariser"
+version = "4.0"
+description = "Telstra conversation summariser used for DAX"
+authors = [
+    {name = "Utkrist",email = "utkrist.shrestha@creativevirtual.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai (>=2.5.0,<3.0.0)",
+    "numpy (>=2.3.4,<3.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
+    "fastapi (>=0.119.0,<0.120.0)",
+    "uvicorn (>=0.38.0,<0.39.0)",
+    "boto3 (>=1.40.55,<2.0.0)",
+    "gunicorn (>=23.0.0,<24.0.0)",
+    "regex (>=2025.9.18,<2026.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

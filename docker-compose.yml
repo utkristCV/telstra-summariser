@@ -1,0 +1,26 @@
+services:
+
+    telstra-summariser-service:
+        build: ./app
+        image: cv-telstra-nonprod-summariser
+        ports:
+            - 8000:8000
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        deploy:
+            mode: replicated
+            replicas: 1
+        environment:
+          SUMMARISER_OPENAI_KEY: ${SUMMARISER_OPENAI_KEY}
+          SUMMARISER_OPTIONS_API_BASE: ${SUMMARISER_OPTIONS_API_BASE}
+          SUMMARISER_OPTIONS_API_VERSION: ${SUMMARISER_OPTIONS_API_VERSION}
+          SUMMARISER_OPTIONS_CHAT_MODEL_DEPLOYMENT_ID: ${SUMMARISER_OPTIONS_CHAT_MODEL_DEPLOYMENT_ID}
+          SUMMARISER_MAX_N_CHARACTERS: ${SUMMARISER_MAX_N_CHARACTERS}
+          SUMMARISER_MIN_N_CHARACTERS: ${SUMMARISER_MIN_N_CHARACTERS}
+          SUMMARISER_ENVIRONMENT: ${SUMMARISER_ENVIRONMENT}
+          SUMMARISER_LOG_TYPE: ${SUMMARISER_LOG_TYPE}
+          AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+          AWS_S3_PROMPT_OBJECT_KEY: ${AWS_S3_PROMPT_OBJECT_KEY}
+          AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+          AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+          GUNICORN_WORKERS: ${GUNICORN_WORKERS}
