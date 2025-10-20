@@ -21,7 +21,6 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# # Run the app
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"
+# Run the app
 ENV GUNICORN_CMD_ARGS="-k uvicorn.workers.UvicornWorker -w 2 -t 300 -b 0.0.0.0:8000"
 CMD ["gunicorn", "main:app"]

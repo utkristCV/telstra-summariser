@@ -14,22 +14,11 @@ client = openai.AzureOpenAI(
     api_key=openai_api_key
     )
 
-def build_prompt(conversation, max_n_char, min_n_char):
-    return f"""
-Summarize the conversation in one sentence that captures the customer’s intent using their own words as closely as possible.
+def build_prompt(conversation, max_n_char, min_n_char, prompt_template):
+    return prompt_template.format(max_n_char=max_n_char, conversation=conversation, min_n_char=min_n_char)
 
-Start with “I” or “We” (first-person view).
-Do not mention the bot or emotions.
-Keep it under {max_n_char} characters.
-If the customer asked to speak to an agent, summarize their intent before that request.
-If there are multiple intents, capture the one that still needs resolution.
-
-Conversation:
-{conversation}
-    """
-
-def get_summary(conversation, max_n_char, min_n_char):
-    system_prompt = build_prompt(conversation, max_n_char, min_n_char)
+def get_summary(conversation, max_n_char, min_n_char, prompt_template):
+    system_prompt = build_prompt(conversation, max_n_char, min_n_char, prompt_template)
     try:
         response = client.chat.completions.create(
             model=openai_model,
